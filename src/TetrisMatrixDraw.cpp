@@ -632,7 +632,7 @@ bool TetrisMatrixDraw::drawNumbers(int x, int yFinish, bool displayColon)
   bool finishedAnimating = true;
 
   int scaledYOffset = (this->scale > 1) ? this->scale : 1;
-  int y = yFinish - (TETRIS_Y_DROP_DEFAULT * this->scale);
+  int y = 0; //yFinish - (TETRIS_Y_DROP_DEFAULT * this->scale);
 
   for (int numpos = 0; numpos < this->sizeOfValue; numpos++)
   {
@@ -643,7 +643,8 @@ bool TetrisMatrixDraw::drawNumbers(int x, int yFinish, bool displayColon)
       {
         finishedAnimating = false;
         fall_instr current_fall = getFallinstrByNum(numstates[numpos].num_to_draw, numstates[numpos].blockindex);
-
+        // Add an offset to the y_stop of each number to place it at the bottom of a rotated 32x64 display.
+        current_fall.y_stop += 48;
         // Handle variations of rotations
         uint8_t rotations = current_fall.num_rot;
         if (rotations == 1)
@@ -709,6 +710,8 @@ bool TetrisMatrixDraw::drawNumbers(int x, int yFinish, bool displayColon)
         for (int i = 0; i < numstates[numpos].blockindex; i++)
         {
           fall_instr fallen_block = getFallinstrByNum(numstates[numpos].num_to_draw, i);
+          // Add an offset to the y_stop of each number to place it at the bottom of a rotated 32x64 display.
+          fallen_block.y_stop += 48;
           if(this->scale <= 1){
             drawShape(fallen_block.blocktype, 
                       this->tetrisColors[fallen_block.color], 
@@ -738,9 +741,10 @@ bool TetrisMatrixDraw::drawNumbers(int x, int yFinish, bool displayColon)
 
 void TetrisMatrixDraw::drawColon(int x, int y, uint16_t colonColour){
   int colonSize = 2 * this->scale;
-  int xColonPos = x + (TETRIS_DISTANCE_BETWEEN_DIGITS * 2 * this->scale);  
-  display->fillRect(xColonPos, y + (12 * this->scale), colonSize, colonSize, colonColour);
-  display->fillRect(xColonPos, y + (8 * this->scale), colonSize, colonSize, colonColour);
+  int xColonPos = x + (TETRIS_DISTANCE_BETWEEN_DIGITS * 2 * this->scale); 
+  // Position the cursor relative to the final position of the characters.
+  display->fillRect(xColonPos, yFinish - (4 * this->scale), colonSize, colonSize, colonColour);
+  display->fillRect(xColonPos, yFinish - (8 * this->scale), colonSize, colonSize, colonColour);
 }
 
 void TetrisMatrixDraw::intialiseColors(){
